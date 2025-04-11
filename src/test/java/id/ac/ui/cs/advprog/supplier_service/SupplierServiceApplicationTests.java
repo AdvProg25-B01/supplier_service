@@ -8,6 +8,7 @@ class SupplierServiceApplicationTests {
 
     @Test
     void contextLoads() {
+        SupplierServiceApplication.main(new String[0]);
     }
 
 }
