@@ -1,4 +1,5 @@
 package id.ac.ui.cs.advprog.supplier_service.command;
 
-public class SupplierCommand {
+public interface SupplierCommand {
+    Object execute();
 }
