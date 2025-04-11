@@ -12,11 +12,34 @@ public class SupplierRepository {
     // Untuk sementara menggunakan arraylist dan method disesuaikan dengan arraylist
     private final List<Supplier> supplierList = new ArrayList<>();
 
-    public Supplier save(Supplier supplier) {return null}
+    public Supplier save(Supplier supplier) {
+        int i = 0;
+        for (Supplier savedSupplier : supplierList) {
+            if (savedSupplier.getId().equals(supplier.getId())) {
+                supplierList.remove(i);
+                supplierList.add(i, supplier);
+                return supplier;
+            }
+            i++;
+        }
+        supplierList.add(supplier);
+        return supplier;
+    }
 
-    public Supplier findById(UUID id) {return null}
+    public Supplier findById(UUID id) {
+        for (Supplier savedSupplier : supplierList) {
+            if (savedSupplier.getId().equals(id)) {
+                return savedSupplier;
+            }
+        }
+        return null;
+    }
 
-    public List<Supplier> getAllSuppliers() {return null}
+    public List<Supplier> getAllSuppliers() {
+        return new ArrayList<>(supplierList);
+    }
 
-    public void deleteById(UUID id) {return null}
+    public void deleteById(UUID id) {
+        supplierList.removeIf(supplier -> supplier.getId().equals(id));
+    }
 }
