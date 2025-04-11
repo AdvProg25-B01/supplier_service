@@ -35,7 +35,7 @@ public class SupplierRepository {
         return null;
     }
 
-    public List<Supplier> getAllSuppliers() {
+    public List<Supplier> findAll() {
         return new ArrayList<>(supplierList);
     }
 
