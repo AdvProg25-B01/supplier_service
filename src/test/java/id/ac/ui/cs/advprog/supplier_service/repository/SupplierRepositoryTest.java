@@ -34,7 +34,7 @@ class SupplierRepositoryTest {
         Supplier saved = supplierRepository.save(supplier);
         assertNotNull(saved);
         assertEquals(supplier.getName(), saved.getName());
-        assertEquals(1, supplierRepository.getAllSuppliers().size());
+        assertEquals(1, supplierRepository.findAll().size());
     }
 
     @Test
@@ -54,7 +54,7 @@ class SupplierRepositoryTest {
         Supplier found = supplierRepository.findById(supplier.getId());
         assertEquals("PT ABC Baru", found.getName());
         assertEquals("Jl. Jalan No. 2", found.getAddress());
-        assertEquals(1, supplierRepository.getAllSuppliers().size());
+        assertEquals(1, supplierRepository.findAll().size());
     }
 
     @Test
@@ -76,11 +76,11 @@ class SupplierRepositoryTest {
         supplierRepository.save(supplier);
         supplierRepository.deleteById(supplier.getId());
         assertNull(supplierRepository.findById(supplier.getId()));
-        assertTrue(supplierRepository.getAllSuppliers().isEmpty());
+        assertTrue(supplierRepository.findAll().isEmpty());
     }
 
     @Test
-    void testGetAllSuppliers() {
+    void testfindAll() {
         Supplier another = Supplier.builder()
                 .id(UUID.randomUUID())
                 .name("CV Bersama")
@@ -93,7 +93,7 @@ class SupplierRepositoryTest {
         supplierRepository.save(supplier);
         supplierRepository.save(another);
 
-        List<Supplier> all = supplierRepository.getAllSuppliers();
+        List<Supplier> all = supplierRepository.findAll();
         assertEquals(2, all.size());
     }
 }
