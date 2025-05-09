@@ -23,4 +23,8 @@ public interface SupplierController {
 
     @DeleteMapping("/suppliers/{id}")
     ResponseEntity<Void> deleteSupplier(@PathVariable UUID id);
+
+    @GetMapping("/suppliers/search")
+    ResponseEntity<List<Supplier>> searchSuppliersByName(@RequestParam("name") String name);
+
 }
