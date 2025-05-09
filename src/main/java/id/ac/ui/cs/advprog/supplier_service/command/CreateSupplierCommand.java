@@ -2,9 +2,11 @@ package id.ac.ui.cs.advprog.supplier_service.command;
 
 import id.ac.ui.cs.advprog.supplier_service.model.Supplier;
 import id.ac.ui.cs.advprog.supplier_service.repository.SupplierRepository;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
+@Getter
 public class CreateSupplierCommand implements SupplierCommand {
     private final Supplier supplier;
     private final SupplierRepository supplierRepository;
