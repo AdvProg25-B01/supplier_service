@@ -11,6 +11,20 @@ import java.util.List;
 @RequiredArgsConstructor
 @Getter
 public class GetSupplierByNameCommand implements SupplierCommand {
+    private final String name;
+    private final SupplierRepository supplierRepository;
+
     @Override
-    public List<Supplier> execute() {return null}
+    public List<Supplier> execute() {
+        List<Supplier> allSuppliers = supplierRepository.findAll();
+        List<Supplier> result = new ArrayList<>();
+
+        for (Supplier supplier : allSuppliers) {
+            if (supplier.getName().toLowerCase().contains(name.toLowerCase())) {
+                result.add(supplier);
+            }
+        }
+
+        return result;
+    }
 }
