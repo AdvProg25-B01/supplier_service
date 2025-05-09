@@ -40,7 +40,7 @@ class SupplierTest {
 
         assertEquals(id, supplier.getId());
         assertEquals(name, supplier.getName());
-        assertEquals(phone, supplier.getPhoneNo());
+        assertEquals(phone, supplier.getPhoneNumber());
         assertEquals(address, supplier.getAddress());
         assertNotNull(supplier.getCreatedAt());
         assertNotNull(supplier.getUpdatedAt());

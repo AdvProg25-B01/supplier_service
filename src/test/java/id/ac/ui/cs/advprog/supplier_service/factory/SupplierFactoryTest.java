@@ -20,7 +20,7 @@ class SupplierFactoryTest {
 
         assertNotNull(supplier.getId());
         assertEquals(name, supplier.getName());
-        assertEquals(phone, supplier.getPhoneNo());
+        assertEquals(phone, supplier.getPhoneNumber());
         assertEquals(address, supplier.getAddress());
         assertNotNull(supplier.getCreatedAt());
         assertNotNull(supplier.getUpdatedAt());
@@ -32,7 +32,7 @@ class SupplierFactoryTest {
 
         assertNotNull(supplier.getId());
         assertEquals("PlaceholderName", supplier.getName());
-        assertEquals("PlaceholderNo", supplier.getPhoneNo());
+        assertEquals("PlaceholderNo", supplier.getPhoneNumber());
         assertEquals("PlaceholderAddress", supplier.getAddress());
         assertNotNull(supplier.getCreatedAt());
         assertNotNull(supplier.getUpdatedAt());
@@ -50,7 +50,7 @@ class SupplierFactoryTest {
 
         assertEquals(id, supplier.getId());
         assertEquals(name, supplier.getName());
-        assertEquals(phone, supplier.getPhoneNo());
+        assertEquals(phone, supplier.getPhoneNumber());
         assertEquals(address, supplier.getAddress());
         assertEquals(createdAt, supplier.getCreatedAt());
     }

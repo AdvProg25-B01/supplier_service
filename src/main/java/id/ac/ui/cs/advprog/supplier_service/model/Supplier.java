@@ -8,7 +8,7 @@ import java.util.UUID;
 
 @Getter
 public class Supplier {
-    private final UUID id;
+    private UUID id;
     private String name;
     private String phoneNumber;
     private String address;
@@ -17,17 +17,13 @@ public class Supplier {
 
     @Builder
     public Supplier(UUID id, String name, String phoneNumber, String address, Date createdAt, Date updatedAt) {
-        this.id = id;
         this.createdAt = createdAt != null ? createdAt : new Date();
         this.updatedAt = updatedAt != null ? updatedAt : new Date();
 
+        setId(id);
         setName(name);
         setPhoneNo(phoneNumber);
         setAddress(address);
-    }
-
-    public String getPhoneNo() {
-        return this.phoneNumber;
     }
 
     public void setPhoneNo(String phoneNo) {
@@ -53,4 +49,13 @@ public class Supplier {
         this.address = address;
         this.updatedAt = new Date();
     }
+
+    public void setId(UUID id) {
+        if (id == null) {
+            id = UUID.randomUUID();
+        }
+        this.id = id;
+        this.updatedAt = new Date();
+    }
+
 }
