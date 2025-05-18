@@ -18,6 +18,7 @@ public class SupplierRepository {
             if (savedSupplier.getId().equals(supplier.getId())) {
                 supplierList.remove(i);
                 supplierList.add(i, supplier);
+                supplier.setCreatedAt(savedSupplier.getCreatedAt());
                 return supplier;
             }
             i++;

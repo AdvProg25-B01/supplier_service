@@ -12,7 +12,7 @@ public class Supplier {
     private String name;
     private String phoneNumber;
     private String address;
-    private final Date createdAt;
+    private Date createdAt;
     private Date updatedAt;
 
     @Builder
@@ -57,5 +57,13 @@ public class Supplier {
         this.id = id;
         this.updatedAt = new Date();
     }
+
+    public void setCreatedAt(Date createdAt) {
+        if (createdAt == null) {
+            createdAt = new Date();
+        }
+        this.createdAt = createdAt;
+    }
+
 
 }
