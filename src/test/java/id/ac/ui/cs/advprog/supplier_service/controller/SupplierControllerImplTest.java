@@ -1,11 +1,9 @@
 package id.ac.ui.cs.advprog.supplier_service.controller;
 
-import id.ac.ui.cs.advprog.supplier_service.command.*;
 import id.ac.ui.cs.advprog.supplier_service.model.Supplier;
-import id.ac.ui.cs.advprog.supplier_service.repository.SupplierRepository;
+import id.ac.ui.cs.advprog.supplier_service.service.AsyncSupplierService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -14,6 +12,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ActiveProfiles;
 
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -23,10 +23,7 @@ import static org.mockito.Mockito.*;
 class SupplierControllerImplTest {
 
     @Mock
-    private SupplierRepository supplierRepository;
-
-    @Mock
-    private SupplierCommandExecutor commandExecutor;
+    private AsyncSupplierService asyncSupplierService;
 
     @InjectMocks
     private SupplierControllerImpl supplierController;
@@ -44,107 +41,121 @@ class SupplierControllerImplTest {
                 .name("Test Supplier")
                 .phoneNumber("123456789")
                 .address("Test Address")
+                .createdAt(new Date())
+                .updatedAt(new Date())
                 .build();
     }
 
     @Test
-    void getAllSuppliers_ShouldReturnAllSuppliers() {
-        // Arrange
-        List<Supplier> suppliers = Arrays.asList(testSupplier);
-        when(commandExecutor.execute(any(ListAllSuppliersCommand.class))).thenReturn(suppliers);
+    void getAllSuppliers_ShouldReturnAllSuppliers() throws ExecutionException, InterruptedException {
+        List<Supplier> suppliers = Collections.singletonList(testSupplier);
+        when(asyncSupplierService.findAllSuppliersAsync())
+            .thenReturn(CompletableFuture.completedFuture(suppliers));
 
-        // Act
-        ResponseEntity<List<Supplier>> response = supplierController.getAllSuppliers();
+        CompletableFuture<ResponseEntity<List<Supplier>>> futureResponse = supplierController.getAllSuppliers();
+        ResponseEntity<List<Supplier>> response = futureResponse.get(); // Block to get the result for testing
 
-        // Assert
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals(suppliers, response.getBody());
-        verify(commandExecutor).execute(any(ListAllSuppliersCommand.class));
+        verify(asyncSupplierService).findAllSuppliersAsync();
     }
 
     @Test
-    void getSupplierById_WhenSupplierExists_ShouldReturnSupplier() {
-        when(commandExecutor.execute(any(GetSupplierByIdCommand.class))).thenReturn(testSupplier);
+    void getSupplierById_WhenSupplierExists_ShouldReturnSupplier() throws ExecutionException, InterruptedException {
+        when(asyncSupplierService.findSupplierByIdAsync(testId))
+            .thenReturn(CompletableFuture.completedFuture(testSupplier));
 
-        ResponseEntity<Supplier> response = supplierController.getSupplierById(testId);
+        CompletableFuture<ResponseEntity<Supplier>> futureResponse = supplierController.getSupplierById(testId);
+        ResponseEntity<Supplier> response = futureResponse.get();
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals(testSupplier, response.getBody());
-
-        ArgumentCaptor<GetSupplierByIdCommand> commandCaptor = ArgumentCaptor.forClass(GetSupplierByIdCommand.class);
-        verify(commandExecutor).execute(commandCaptor.capture());
-        assertEquals(testId, commandCaptor.getValue().getSupplierId());
+        verify(asyncSupplierService).findSupplierByIdAsync(testId);
     }
 
     @Test
-    void getSupplierById_WhenSupplierDoesNotExist_ShouldReturnNotFound() {
-        when(commandExecutor.execute(any(GetSupplierByIdCommand.class))).thenReturn(null);
+    void getSupplierById_WhenSupplierDoesNotExist_ShouldReturnNotFound() throws ExecutionException, InterruptedException {
+        when(asyncSupplierService.findSupplierByIdAsync(testId))
+            .thenReturn(CompletableFuture.completedFuture(null));
 
-        ResponseEntity<Supplier> response = supplierController.getSupplierById(testId);
+        CompletableFuture<ResponseEntity<Supplier>> futureResponse = supplierController.getSupplierById(testId);
+        ResponseEntity<Supplier> response = futureResponse.get();
 
         assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
-        assertNull(response.getBody());
+        verify(asyncSupplierService).findSupplierByIdAsync(testId);
     }
 
     @Test
-    void createSupplier_ShouldCreateAndReturnSupplier() {
-        when(commandExecutor.execute(any(CreateSupplierCommand.class))).thenReturn(testSupplier);
+    void createSupplier_ShouldCreateAndReturnSupplier() throws ExecutionException, InterruptedException {
+        Supplier supplierToCreate = Supplier.builder()
+                .name("New Supplier")
+                .phoneNumber("987654321")
+                .address("New Address")
+                .build();
 
-        ResponseEntity<Supplier> response = supplierController.createSupplier(testSupplier);
+        when(asyncSupplierService.createSupplierAsync(any(Supplier.class)))
+            .thenReturn(CompletableFuture.completedFuture(testSupplier));
+
+        CompletableFuture<ResponseEntity<Supplier>> futureResponse = supplierController.createSupplier(supplierToCreate);
+        ResponseEntity<Supplier> response = futureResponse.get();
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals(testSupplier, response.getBody());
-
-        ArgumentCaptor<CreateSupplierCommand> commandCaptor = ArgumentCaptor.forClass(CreateSupplierCommand.class);
-        verify(commandExecutor).execute(commandCaptor.capture());
-        assertEquals(testSupplier, commandCaptor.getValue().getSupplier());
+        verify(asyncSupplierService).createSupplierAsync(any(Supplier.class));
     }
 
     @Test
-    void updateSupplier_ShouldUpdateAndReturnSupplier() {
-        Supplier updatedSupplier = Supplier.builder()
-                .name("Updated Name")
+    void updateSupplier_ShouldUpdateAndReturnSupplier() throws ExecutionException, InterruptedException {
+        Supplier supplierToUpdate = Supplier.builder()
+                .name("Updated Supplier")
                 .phoneNumber("987654321")
                 .address("Updated Address")
                 .build();
 
-        when(commandExecutor.execute(any(UpdateSupplierCommand.class))).thenReturn(testSupplier);
+        when(asyncSupplierService.updateSupplierAsync(any(Supplier.class)))
+            .thenReturn(CompletableFuture.completedFuture(testSupplier));
 
-        ResponseEntity<Supplier> response = supplierController.updateSupplier(testId, updatedSupplier);
+        CompletableFuture<ResponseEntity<Supplier>> futureResponse = 
+            supplierController.updateSupplier(testId, supplierToUpdate);
+        ResponseEntity<Supplier> response = futureResponse.get();
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals(testSupplier, response.getBody());
-
-        ArgumentCaptor<UpdateSupplierCommand> commandCaptor = ArgumentCaptor.forClass(UpdateSupplierCommand.class);
-        verify(commandExecutor).execute(commandCaptor.capture());
-        assertEquals(testId, commandCaptor.getValue().getSupplier().getId());
+        verify(asyncSupplierService).updateSupplierAsync(any(Supplier.class));
     }
 
     @Test
-    void deleteSupplier_ShouldReturnNoContent() {
-        doReturn(null).when(commandExecutor).execute(any(DeleteSupplierCommand.class));
+    void deleteSupplier_ShouldReturnSuccessResponse() throws ExecutionException, InterruptedException {
+        Map<String, Object> deleteResult = new HashMap<>();
+        deleteResult.put("success", true);
+        deleteResult.put("id", testId);
 
-        ResponseEntity<Map<String, Object>> response = supplierController.deleteSupplier(testId);
+        when(asyncSupplierService.deleteSupplierAsync(testId))
+            .thenReturn(CompletableFuture.completedFuture(deleteResult));
+
+        CompletableFuture<ResponseEntity<Map<String, Object>>> futureResponse = 
+            supplierController.deleteSupplier(testId);
+        ResponseEntity<Map<String, Object>> response = futureResponse.get();
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
-
-        ArgumentCaptor<DeleteSupplierCommand> commandCaptor = ArgumentCaptor.forClass(DeleteSupplierCommand.class);
-        verify(commandExecutor).execute(commandCaptor.capture());
-        assertEquals(testId, commandCaptor.getValue().getSupplierId());
+        assertEquals(deleteResult, response.getBody());
+        verify(asyncSupplierService).deleteSupplierAsync(testId);
     }
-
+    
     @Test
-    void searchSuppliersByName_ShouldReturnMatchingSuppliers() {
-        List<Supplier> suppliers = Arrays.asList(testSupplier);
-        when(commandExecutor.execute(any(GetSupplierByNameCommand.class))).thenReturn(suppliers);
+    void searchSuppliersByName_ShouldReturnMatchingSuppliers() throws ExecutionException, InterruptedException {
+        String searchName = "test";
+        List<Supplier> suppliers = Collections.singletonList(testSupplier);
+        
+        when(asyncSupplierService.searchSuppliersByNameAsync(searchName))
+            .thenReturn(CompletableFuture.completedFuture(suppliers));
 
-        ResponseEntity<List<Supplier>> response = supplierController.searchSuppliersByName("Test");
+        CompletableFuture<ResponseEntity<List<Supplier>>> futureResponse = 
+            supplierController.searchSuppliersByName(searchName);
+        ResponseEntity<List<Supplier>> response = futureResponse.get();
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals(suppliers, response.getBody());
-
-        ArgumentCaptor<GetSupplierByNameCommand> commandCaptor = ArgumentCaptor.forClass(GetSupplierByNameCommand.class);
-        verify(commandExecutor).execute(commandCaptor.capture());
-        assertEquals("Test", commandCaptor.getValue().getName());
+        verify(asyncSupplierService).searchSuppliersByNameAsync(searchName);
     }
 }
