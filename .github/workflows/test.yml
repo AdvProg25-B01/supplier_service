@@ -1,0 +1,28 @@
+name: Run Tests
+
+on:
+  push:
+    branches: [ master, async ]
+  pull_request:
+    branches: [ master, async ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up JDK 17
+      uses: actions/setup-java@v3
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+    
+    # Add test environment variables here
+    - name: Run tests
+      run: ./gradlew test
+      env:
+        JDBC_DATABASE_URL: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1
+        JDBC_DATABASE_USERNAME: sa
+        JDBC_DATABASE_PASSWORD: 
