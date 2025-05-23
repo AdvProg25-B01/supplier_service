@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
@@ -38,6 +39,21 @@ public class SupplierControllerImpl implements SupplierController {
 
     @Override
     public ResponseEntity<Supplier> createSupplier(@RequestBody Supplier supplier) {
+        // Ensure ID, createdAt and updatedAt are set
+        if (supplier.getId() == null) {
+            supplier.setId(UUID.randomUUID());
+        }
+        
+        if (supplier.getCreatedAt() == null) {
+            Date now = new Date();
+            supplier.setCreatedAt(now);
+        }
+        
+        if (supplier.getUpdatedAt() == null) {
+            Date now = new Date();
+            supplier.setUpdatedAt(now);
+        }
+        
         CreateSupplierCommand command = new CreateSupplierCommand(supplier, supplierRepository);
         Supplier created = commandExecutor.execute(command);
         return ResponseEntity.ok(created);
@@ -45,9 +61,13 @@ public class SupplierControllerImpl implements SupplierController {
 
     @Override
     public ResponseEntity<Supplier> updateSupplier(@PathVariable UUID id, @RequestBody Supplier supplier) {
+        // Ensure ID is set correctly
         supplier.setId(id);
+        
+        // Delegate to the command
         UpdateSupplierCommand command = new UpdateSupplierCommand(supplier, supplierRepository);
         Supplier updated = commandExecutor.execute(command);
+        
         return ResponseEntity.ok(updated);
     }
 

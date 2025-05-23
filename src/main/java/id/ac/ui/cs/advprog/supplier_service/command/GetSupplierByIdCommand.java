@@ -5,6 +5,7 @@ import id.ac.ui.cs.advprog.supplier_service.repository.SupplierRepository;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
+import java.util.Optional;
 import java.util.UUID;
 
 @RequiredArgsConstructor
@@ -15,6 +16,7 @@ public class GetSupplierByIdCommand implements SupplierCommand {
 
     @Override
     public Supplier execute() {
-        return supplierRepository.findById(supplierId);
+        Optional<Supplier> supplierOptional = supplierRepository.findById(supplierId);
+        return supplierOptional.orElse(null);
     }
 }

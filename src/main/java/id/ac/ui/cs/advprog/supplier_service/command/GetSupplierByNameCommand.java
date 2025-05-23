@@ -5,7 +5,6 @@ import id.ac.ui.cs.advprog.supplier_service.repository.SupplierRepository;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @RequiredArgsConstructor
@@ -16,15 +15,6 @@ public class GetSupplierByNameCommand implements SupplierCommand {
 
     @Override
     public List<Supplier> execute() {
-        List<Supplier> allSuppliers = supplierRepository.findAll();
-        List<Supplier> result = new ArrayList<>();
-
-        for (Supplier supplier : allSuppliers) {
-            if (supplier.getName().toLowerCase().contains(name.toLowerCase())) {
-                result.add(supplier);
-            }
-        }
-
-        return result;
+        return supplierRepository.findByNameContainingIgnoreCase(name);
     }
 }
