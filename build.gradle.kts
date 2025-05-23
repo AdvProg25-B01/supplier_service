@@ -40,6 +40,8 @@ dependencies {
     
     testRuntimeOnly("com.h2database:h2")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+    implementation("me.paulschwarz:spring-dotenv:4.0.0")
+
 }
 tasks.withType<Test> {
     useJUnitPlatform()
