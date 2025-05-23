@@ -20,6 +20,8 @@ jobs:
         distribution: 'temurin'
     
     # Add test environment variables here
+    - name: Add gradlew permission
+      run: chmod +x gradlew
     - name: Run tests
       run: ./gradlew test
       env:
