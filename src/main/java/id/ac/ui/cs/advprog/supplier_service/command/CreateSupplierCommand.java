@@ -16,18 +16,10 @@ public class CreateSupplierCommand implements SupplierCommand {
 
     @Override
     public Supplier execute() {
-        if (supplier.getId() == null) {
-            supplier.setId(UUID.randomUUID());
-        }
-        
-        if (supplier.getCreatedAt() == null) {
-            supplier.setCreatedAt(new Date());
-        }
-        
-        if (supplier.getUpdatedAt() == null) {
-            Date now = new Date();
-            supplier.setUpdatedAt(now);
-        }
+        supplier.setId(UUID.randomUUID());
+        supplier.setCreatedAt(new Date());
+        Date now = new Date();
+        supplier.setUpdatedAt(now);
         
         return supplierRepository.save(supplier);
     }

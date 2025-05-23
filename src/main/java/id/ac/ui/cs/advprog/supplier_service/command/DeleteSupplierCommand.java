@@ -23,15 +23,18 @@ public class DeleteSupplierCommand implements SupplierCommand {
         supplierRepository.deleteById(supplierId);
         
         Map<String, Object> response = new HashMap<>();
-        response.put("success", true);
-        response.put("message", "Supplier deleted successfully");
-        response.put("id", supplierId);
         
         supplier.ifPresent(s -> {
+            response.put("success", true);
+            response.put("message", "Supplier deleted successfully");
+            response.put("id", supplierId);
             response.put("supplierName", s.getName());
             response.put("deletedAt", new java.util.Date());
         });
-        
+        if (response.isEmpty()) {
+            response.put("success", false);
+            response.put("message", "Supplier not found");
+        }
         return response;
     }
 }
