@@ -13,10 +13,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ActiveProfiles;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -127,9 +124,9 @@ class SupplierControllerImplTest {
     void deleteSupplier_ShouldReturnNoContent() {
         doReturn(null).when(commandExecutor).execute(any(DeleteSupplierCommand.class));
 
-        ResponseEntity<Void> response = supplierController.deleteSupplier(testId);
+        ResponseEntity<Map<String, Object>> response = supplierController.deleteSupplier(testId);
 
-        assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode());
+        assertEquals(HttpStatus.OK, response.getStatusCode());
 
         ArgumentCaptor<DeleteSupplierCommand> commandCaptor = ArgumentCaptor.forClass(DeleteSupplierCommand.class);
         verify(commandExecutor).execute(commandCaptor.capture());
