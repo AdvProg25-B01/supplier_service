@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @RestController
@@ -72,12 +73,12 @@ public class SupplierControllerImpl implements SupplierController {
     }
 
     @Override
-    public ResponseEntity<Void> deleteSupplier(@PathVariable UUID id) {
+    public ResponseEntity<Map<String, Object>> deleteSupplier(@PathVariable UUID id) {
         DeleteSupplierCommand command = new DeleteSupplierCommand(id, supplierRepository);
-        commandExecutor.execute(command);
-        return ResponseEntity.noContent().build();
+        Map<String, Object> response = commandExecutor.execute(command);
+        return ResponseEntity.ok(response);
     }
-
+    
     @Override
     public ResponseEntity<List<Supplier>> searchSuppliersByName(String name) {
         List<Supplier> results = commandExecutor.execute(

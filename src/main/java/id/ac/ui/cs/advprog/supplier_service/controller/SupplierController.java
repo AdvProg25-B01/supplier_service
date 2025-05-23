@@ -5,6 +5,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 public interface SupplierController {
@@ -22,8 +23,8 @@ public interface SupplierController {
     ResponseEntity<Supplier> updateSupplier(@PathVariable UUID id, @RequestBody Supplier supplier);
 
     @DeleteMapping("/suppliers/{id}")
-    ResponseEntity<Void> deleteSupplier(@PathVariable UUID id);
-
+    ResponseEntity<Map<String, Object>> deleteSupplier(@PathVariable UUID id);
+    
     @GetMapping("/suppliers/search")
     ResponseEntity<List<Supplier>> searchSuppliersByName(@RequestParam("name") String name);
 
