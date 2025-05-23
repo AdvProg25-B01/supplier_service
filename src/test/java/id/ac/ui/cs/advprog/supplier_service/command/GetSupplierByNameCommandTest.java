@@ -4,13 +4,16 @@ import id.ac.ui.cs.advprog.supplier_service.model.Supplier;
 import id.ac.ui.cs.advprog.supplier_service.repository.SupplierRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.test.context.ActiveProfiles;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+@ActiveProfiles("test")
 class GetSupplierByNameCommandTest {
 
     private SupplierRepository supplierRepository;
@@ -33,7 +36,12 @@ class GetSupplierByNameCommandTest {
                 .address("INDONESIA")
                 .build();
 
-        when(supplierRepository.findAll()).thenReturn(Arrays.asList(supplier1, supplier2, supplier3));
+        when(supplierRepository.findByNameContainingIgnoreCase("test"))
+            .thenReturn(Arrays.asList(supplier1, supplier3));
+        when(supplierRepository.findByNameContainingIgnoreCase("Nonexistent"))
+            .thenReturn(Collections.emptyList());
+        when(supplierRepository.findByNameContainingIgnoreCase("CV Teknologi Bersama"))
+            .thenReturn(Collections.singletonList(supplier2));
     }
 
     @Test
@@ -45,6 +53,8 @@ class GetSupplierByNameCommandTest {
         assertEquals(2, result.size());
         assertTrue(result.contains(supplier1));
         assertTrue(result.contains(supplier3));
+        
+        verify(supplierRepository).findByNameContainingIgnoreCase("test");
     }
 
     @Test
@@ -54,6 +64,7 @@ class GetSupplierByNameCommandTest {
         List<Supplier> result = command.execute();
 
         assertTrue(result.isEmpty());
+        verify(supplierRepository).findByNameContainingIgnoreCase("Nonexistent");
     }
 
     @Test
@@ -64,5 +75,6 @@ class GetSupplierByNameCommandTest {
 
         assertEquals(1, result.size());
         assertEquals(supplier2, result.get(0));
+        verify(supplierRepository).findByNameContainingIgnoreCase("CV Teknologi Bersama");
     }
 }

@@ -5,6 +5,7 @@ import id.ac.ui.cs.advprog.supplier_service.repository.SupplierRepository;
 import org.junit.jupiter.api.Test;
 
 import java.util.Date;
+import java.util.Optional;
 import java.util.UUID;
 
 import static org.mockito.Mockito.*;
@@ -25,12 +26,26 @@ class GetSupplierByIdCommandTest {
                 .updatedAt(new Date())
                 .build();
 
-        when(repository.findById(id)).thenReturn(supplier);
+        when(repository.findById(id)).thenReturn(Optional.of(supplier));
 
         GetSupplierByIdCommand command = new GetSupplierByIdCommand(id, repository);
         Supplier result = command.execute();
 
         assertEquals(supplier, result);
+        verify(repository).findById(id);
+    }
+    
+    @Test
+    void testExecuteShouldReturnNullWhenSupplierNotFound() {
+        SupplierRepository repository = mock(SupplierRepository.class);
+        UUID id = UUID.randomUUID();
+
+        when(repository.findById(id)).thenReturn(Optional.empty());
+
+        GetSupplierByIdCommand command = new GetSupplierByIdCommand(id, repository);
+        Supplier result = command.execute();
+
+        assertNull(result);
         verify(repository).findById(id);
     }
 }

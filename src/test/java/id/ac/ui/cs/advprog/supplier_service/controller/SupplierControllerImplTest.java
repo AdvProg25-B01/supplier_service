@@ -11,15 +11,18 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.test.context.ActiveProfiles;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
+@ActiveProfiles("test")
 class SupplierControllerImplTest {
 
     @Mock
@@ -37,7 +40,7 @@ class SupplierControllerImplTest {
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-
+        
         testId = UUID.randomUUID();
         testSupplier = Supplier.builder()
                 .id(testId)
@@ -49,11 +52,14 @@ class SupplierControllerImplTest {
 
     @Test
     void getAllSuppliers_ShouldReturnAllSuppliers() {
+        // Arrange
         List<Supplier> suppliers = Arrays.asList(testSupplier);
         when(commandExecutor.execute(any(ListAllSuppliersCommand.class))).thenReturn(suppliers);
 
+        // Act
         ResponseEntity<List<Supplier>> response = supplierController.getAllSuppliers();
 
+        // Assert
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals(suppliers, response.getBody());
         verify(commandExecutor).execute(any(ListAllSuppliersCommand.class));

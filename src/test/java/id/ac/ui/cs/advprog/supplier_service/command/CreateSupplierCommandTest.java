@@ -14,7 +14,7 @@ class CreateSupplierCommandTest {
     @Test
     void testExecuteCreatesSupplierSuccessfully() {
         SupplierRepository mockRepo = mock(SupplierRepository.class);
-        Supplier supplier = new Supplier(UUID.randomUUID(), "PT Maju Jaya", "08123456789", "Jakarta", null, null);
+        Supplier supplier = new Supplier("PT Maju Jaya", "08123456789", "Jakarta");
 
         when(mockRepo.save(supplier)).thenReturn(supplier);
 
