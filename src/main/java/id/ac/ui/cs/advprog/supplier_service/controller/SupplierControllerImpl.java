@@ -1,9 +1,7 @@
 package id.ac.ui.cs.advprog.supplier_service.controller;
 
-import id.ac.ui.cs.advprog.supplier_service.command.*;
-import id.ac.ui.cs.advprog.supplier_service.command.*;
 import id.ac.ui.cs.advprog.supplier_service.model.Supplier;
-import id.ac.ui.cs.advprog.supplier_service.repository.SupplierRepository;
+import id.ac.ui.cs.advprog.supplier_service.service.AsyncSupplierService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -12,34 +10,33 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
 @RestController
 @RequiredArgsConstructor
 public class SupplierControllerImpl implements SupplierController {
 
-    private final SupplierRepository supplierRepository;
-    private final SupplierCommandExecutor commandExecutor;
+    private final AsyncSupplierService asyncSupplierService;
 
     @Override
-    public ResponseEntity<List<Supplier>> getAllSuppliers() {
-        ListAllSuppliersCommand command = new ListAllSuppliersCommand(supplierRepository);
-        List<Supplier> suppliers = commandExecutor.execute(command);
-        return ResponseEntity.ok(suppliers);
+    @GetMapping("/suppliers")
+    public CompletableFuture<ResponseEntity<List<Supplier>>> getAllSuppliers() {
+        return asyncSupplierService.findAllSuppliersAsync()
+                .thenApply(ResponseEntity::ok);
     }
 
     @Override
-    public ResponseEntity<Supplier> getSupplierById(@PathVariable UUID id) {
-        GetSupplierByIdCommand command = new GetSupplierByIdCommand(id, supplierRepository);
-        Supplier supplier = commandExecutor.execute(command);
-        if (supplier != null) {
-            return ResponseEntity.ok(supplier);
-        } else {
-            return ResponseEntity.notFound().build();
-        }
+    @GetMapping("/suppliers/{id}")
+    public CompletableFuture<ResponseEntity<Supplier>> getSupplierById(@PathVariable UUID id) {
+        return asyncSupplierService.findSupplierByIdAsync(id)
+                .thenApply(supplier -> supplier != null ? 
+                        ResponseEntity.ok(supplier) : 
+                        ResponseEntity.notFound().build());
     }
 
     @Override
-    public ResponseEntity<Supplier> createSupplier(@RequestBody Supplier supplier) {
+    @PostMapping("/suppliers")
+    public CompletableFuture<ResponseEntity<Supplier>> createSupplier(@RequestBody Supplier supplier) {
         // Ensure ID, createdAt and updatedAt are set
         if (supplier.getId() == null) {
             supplier.setId(UUID.randomUUID());
@@ -55,35 +52,31 @@ public class SupplierControllerImpl implements SupplierController {
             supplier.setUpdatedAt(now);
         }
         
-        CreateSupplierCommand command = new CreateSupplierCommand(supplier, supplierRepository);
-        Supplier created = commandExecutor.execute(command);
-        return ResponseEntity.ok(created);
+        return asyncSupplierService.createSupplierAsync(supplier)
+                .thenApply(ResponseEntity::ok);
     }
 
     @Override
-    public ResponseEntity<Supplier> updateSupplier(@PathVariable UUID id, @RequestBody Supplier supplier) {
-        // Ensure ID is set correctly
+    @PutMapping("/suppliers/{id}")
+    public CompletableFuture<ResponseEntity<Supplier>> updateSupplier(
+            @PathVariable UUID id, @RequestBody Supplier supplier) {
         supplier.setId(id);
-        
-        // Delegate to the command
-        UpdateSupplierCommand command = new UpdateSupplierCommand(supplier, supplierRepository);
-        Supplier updated = commandExecutor.execute(command);
-        
-        return ResponseEntity.ok(updated);
+        return asyncSupplierService.updateSupplierAsync(supplier)
+                .thenApply(ResponseEntity::ok);
     }
 
     @Override
-    public ResponseEntity<Map<String, Object>> deleteSupplier(@PathVariable UUID id) {
-        DeleteSupplierCommand command = new DeleteSupplierCommand(id, supplierRepository);
-        Map<String, Object> response = commandExecutor.execute(command);
-        return ResponseEntity.ok(response);
+    @DeleteMapping("/suppliers/{id}")
+    public CompletableFuture<ResponseEntity<Map<String, Object>>> deleteSupplier(@PathVariable UUID id) {
+        return asyncSupplierService.deleteSupplierAsync(id)
+                .thenApply(ResponseEntity::ok);
     }
     
     @Override
-    public ResponseEntity<List<Supplier>> searchSuppliersByName(String name) {
-        List<Supplier> results = commandExecutor.execute(
-                new GetSupplierByNameCommand(name, supplierRepository)
-        );
-        return ResponseEntity.ok(results);
+    @GetMapping("/suppliers/search")
+    public CompletableFuture<ResponseEntity<List<Supplier>>> searchSuppliersByName(
+            @RequestParam("name") String name) {
+        return asyncSupplierService.searchSuppliersByNameAsync(name)
+                .thenApply(ResponseEntity::ok);
     }
 }

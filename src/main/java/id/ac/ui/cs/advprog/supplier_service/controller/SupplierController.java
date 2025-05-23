@@ -7,25 +7,27 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
 public interface SupplierController {
-
+    
     @GetMapping("/suppliers")
-    ResponseEntity<List<Supplier>> getAllSuppliers();
-
+    CompletableFuture<ResponseEntity<List<Supplier>>> getAllSuppliers();
+    
     @GetMapping("/suppliers/{id}")
-    ResponseEntity<Supplier> getSupplierById(@PathVariable UUID id);
-
+    CompletableFuture<ResponseEntity<Supplier>> getSupplierById(@PathVariable UUID id);
+    
     @PostMapping("/suppliers")
-    ResponseEntity<Supplier> createSupplier(@RequestBody Supplier supplier);
-
+    CompletableFuture<ResponseEntity<Supplier>> createSupplier(@RequestBody Supplier supplier);
+    
     @PutMapping("/suppliers/{id}")
-    ResponseEntity<Supplier> updateSupplier(@PathVariable UUID id, @RequestBody Supplier supplier);
-
+    CompletableFuture<ResponseEntity<Supplier>> updateSupplier(
+            @PathVariable UUID id, @RequestBody Supplier supplier);
+    
     @DeleteMapping("/suppliers/{id}")
-    ResponseEntity<Map<String, Object>> deleteSupplier(@PathVariable UUID id);
+    CompletableFuture<ResponseEntity<Map<String, Object>>> deleteSupplier(@PathVariable UUID id);
     
     @GetMapping("/suppliers/search")
-    ResponseEntity<List<Supplier>> searchSuppliersByName(@RequestParam("name") String name);
-
+    CompletableFuture<ResponseEntity<List<Supplier>>> searchSuppliersByName(
+            @RequestParam("name") String name);
 }
