@@ -4,6 +4,7 @@ import id.ac.ui.cs.advprog.supplier_service.model.Supplier;
 import id.ac.ui.cs.advprog.supplier_service.repository.SupplierRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Date;
 import java.util.Optional;
@@ -20,7 +21,8 @@ class UpdateSupplierCommandTest {
         SupplierRepository repository = mock(SupplierRepository.class);
         
         UUID id = UUID.randomUUID();
-        Date createdAt = new Date();
+        Date createdAt = new Date(System.currentTimeMillis() - 100000); // older timestamp
+        Date oldUpdateTime = new Date(System.currentTimeMillis() - 50000); // older timestamp
         
         Supplier existingSupplier = Supplier.builder()
                 .id(id)
@@ -28,7 +30,7 @@ class UpdateSupplierCommandTest {
                 .phoneNumber("123456789")
                 .address("Original Address")
                 .createdAt(createdAt)
-                .updatedAt(createdAt)
+                .updatedAt(oldUpdateTime)
                 .build();
         
         Supplier updatedData = new Supplier();
@@ -36,6 +38,8 @@ class UpdateSupplierCommandTest {
         updatedData.setName("Updated Name");
         updatedData.setPhoneNumber("987654321");
         updatedData.setAddress("Updated Address");
+        updatedData.setCreatedAt(new Date()); // Client tries to change creation date
+        updatedData.setUpdatedAt(new Date()); // Client provides update timestamp
         
         when(repository.findById(id)).thenReturn(Optional.of(existingSupplier));
         when(repository.save(any(Supplier.class))).thenAnswer(invocation -> invocation.getArgument(0));
@@ -48,44 +52,39 @@ class UpdateSupplierCommandTest {
         assertEquals("Updated Name", result.getName());
         assertEquals("987654321", result.getPhoneNumber());
         assertEquals("Updated Address", result.getAddress());
+        
         assertEquals(createdAt, result.getCreatedAt()); // Original createdAt should be preserved
-        assertNotNull(result.getUpdatedAt()); // updatedAt should be updated
+        assertNotEquals(updatedData.getUpdatedAt(), result.getUpdatedAt()); // Client updatedAt should be ignored
+        assertTrue(result.getUpdatedAt().after(oldUpdateTime)); // But updatedAt should be newer than the old one
         
         verify(repository).findById(id);
         verify(repository).save(any(Supplier.class));
     }
     
     @Test
-    void testExecuteHandlesMissingSupplier() {
+    void testExecuteThrowsExceptionForNonexistentSupplier() {
         SupplierRepository repository = mock(SupplierRepository.class);
         UUID id = UUID.randomUUID();
         
-        Supplier newSupplier = new Supplier();
-        newSupplier.setId(id);
-        newSupplier.setName("New Supplier");
-        newSupplier.setPhoneNumber("123456789");
-        newSupplier.setAddress("New Address");
+        Supplier nonExistentSupplier = new Supplier();
+        nonExistentSupplier.setId(id);
+        nonExistentSupplier.setName("New Supplier");
+        nonExistentSupplier.setPhoneNumber("123456789");
+        nonExistentSupplier.setAddress("New Address");
         
         when(repository.findById(id)).thenReturn(Optional.empty());
-        when(repository.save(any(Supplier.class))).thenAnswer(invocation -> {
-            Supplier saved = invocation.getArgument(0);
-            assertNotNull(saved.getCreatedAt(), "CreatedAt should be set before save");
-            assertNotNull(saved.getUpdatedAt(), "UpdatedAt should be set before save");
-            return saved;
-        });
         
-        UpdateSupplierCommand command = new UpdateSupplierCommand(newSupplier, repository);
-        Supplier result = command.execute();
+        UpdateSupplierCommand command = new UpdateSupplierCommand(nonExistentSupplier, repository);
         
-        assertNotNull(result);
-        assertEquals(id, result.getId());
-        assertEquals("New Supplier", result.getName());
-        assertEquals("123456789", result.getPhoneNumber());
-        assertEquals("New Address", result.getAddress());
-        assertNotNull(result.getCreatedAt());
-        assertNotNull(result.getUpdatedAt());
+        ResponseStatusException exception = assertThrows(
+            ResponseStatusException.class,
+            command::execute
+        );
+        
+        assertEquals(404, exception.getStatusCode().value());
+        assertTrue(exception.getMessage().contains(id.toString()));
         
         verify(repository).findById(id);
-        verify(repository).save(any(Supplier.class));
+        verify(repository, never()).save(any()); 
     }
 }
