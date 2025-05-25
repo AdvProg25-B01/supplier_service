@@ -42,6 +42,8 @@ dependencies {
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
     implementation("me.paulschwarz:spring-dotenv:4.0.0")
 
+    implementation("org.springframework.boot:spring-boot-starter-actuator")
+    implementation("io.micrometer:micrometer-registry-prometheus")
 }
 tasks.withType<Test> {
     useJUnitPlatform()
