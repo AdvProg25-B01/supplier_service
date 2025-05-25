@@ -66,6 +66,19 @@ class AsyncSupplierServiceTest {
         assertEquals(supplierList, result);
         verify(commandExecutor).execute(any(ListAllSuppliersCommand.class));
     }
+    
+    @Test
+    void findAllSuppliersAsync_WhenExceptionThrown_ShouldCompleteExceptionally() {
+        when(commandExecutor.execute(any(ListAllSuppliersCommand.class)))
+            .thenThrow(new RuntimeException("Database error"));
+
+        CompletableFuture<List<Supplier>> future = asyncSupplierService.findAllSuppliersAsync();
+
+        ExecutionException exception = assertThrows(ExecutionException.class, future::get);
+        assertTrue(exception.getCause() instanceof org.springframework.web.server.ResponseStatusException);
+        assertEquals("500 INTERNAL_SERVER_ERROR \"Failed to retrieve suppliers\"", 
+            exception.getCause().getMessage());
+    }
 
     @Test
     void findSupplierByIdAsync_ShouldReturnSupplier() throws ExecutionException, InterruptedException {
@@ -76,6 +89,17 @@ class AsyncSupplierServiceTest {
 
         assertEquals(testSupplier, result);
         verify(commandExecutor).execute(any(GetSupplierByIdCommand.class));
+    }
+    
+    @Test
+    void findSupplierByIdAsync_WhenExceptionThrown_ShouldCompleteExceptionally() {
+        when(commandExecutor.execute(any(GetSupplierByIdCommand.class)))
+            .thenThrow(new RuntimeException("Not found"));
+
+        CompletableFuture<Supplier> future = asyncSupplierService.findSupplierByIdAsync(testId);
+
+        ExecutionException exception = assertThrows(ExecutionException.class, future::get);
+        assertTrue(exception.getCause() instanceof org.springframework.web.server.ResponseStatusException);
     }
 
     @Test
@@ -89,6 +113,20 @@ class AsyncSupplierServiceTest {
         assertEquals(supplierList, result);
         verify(commandExecutor).execute(any(GetSupplierByNameCommand.class));
     }
+    
+    @Test
+    void searchSuppliersByNameAsync_WhenExceptionThrown_ShouldCompleteExceptionally() {
+        String searchName = "test";
+        when(commandExecutor.execute(any(GetSupplierByNameCommand.class)))
+            .thenThrow(new RuntimeException("Database error"));
+
+        CompletableFuture<List<Supplier>> future = asyncSupplierService.searchSuppliersByNameAsync(searchName);
+
+        ExecutionException exception = assertThrows(ExecutionException.class, future::get);
+        assertTrue(exception.getCause() instanceof org.springframework.web.server.ResponseStatusException);
+        assertEquals("500 INTERNAL_SERVER_ERROR \"Failed to search suppliers with name containing test\"", 
+            exception.getCause().getMessage());
+    }
 
     @Test
     void createSupplierAsync_ShouldCreateAndReturnSupplier() throws ExecutionException, InterruptedException {
@@ -99,6 +137,17 @@ class AsyncSupplierServiceTest {
 
         assertEquals(testSupplier, result);
         verify(commandExecutor).execute(any(CreateSupplierCommand.class));
+    }
+    
+    @Test
+    void createSupplierAsync_WhenExceptionThrown_ShouldCompleteExceptionally() {
+        when(commandExecutor.execute(any(CreateSupplierCommand.class)))
+            .thenThrow(new RuntimeException("Database error"));
+
+        CompletableFuture<Supplier> future = asyncSupplierService.createSupplierAsync(testSupplier);
+
+        ExecutionException exception = assertThrows(ExecutionException.class, future::get);
+        assertTrue(exception.getCause() instanceof org.springframework.web.server.ResponseStatusException);
     }
 
     @Test
@@ -111,6 +160,34 @@ class AsyncSupplierServiceTest {
         assertEquals(testSupplier, result);
         verify(commandExecutor).execute(any(UpdateSupplierCommand.class));
     }
+    
+    @Test
+    void updateSupplierAsync_WithResponseStatusException_ShouldCompleteExceptionally() {
+        org.springframework.web.server.ResponseStatusException responseException = 
+            new org.springframework.web.server.ResponseStatusException(
+                org.springframework.http.HttpStatus.NOT_FOUND, "Supplier not found");
+        
+        when(commandExecutor.execute(any(UpdateSupplierCommand.class)))
+            .thenThrow(responseException);
+
+        CompletableFuture<Supplier> future = asyncSupplierService.updateSupplierAsync(testSupplier);
+
+        ExecutionException exception = assertThrows(ExecutionException.class, future::get);
+        assertEquals(responseException, exception.getCause());
+    }
+    
+    @Test
+    void updateSupplierAsync_WithGenericException_ShouldCompleteExceptionally() {
+        when(commandExecutor.execute(any(UpdateSupplierCommand.class)))
+            .thenThrow(new RuntimeException("Database error"));
+
+        CompletableFuture<Supplier> future = asyncSupplierService.updateSupplierAsync(testSupplier);
+
+        ExecutionException exception = assertThrows(ExecutionException.class, future::get);
+        assertTrue(exception.getCause() instanceof org.springframework.web.server.ResponseStatusException);
+        assertEquals("500 INTERNAL_SERVER_ERROR \"Failed to update supplier with ID " + testId + "\"", 
+            exception.getCause().getMessage());
+    }
 
     @Test
     void deleteSupplierAsync_ShouldDeleteAndReturnResponse() throws ExecutionException, InterruptedException {
@@ -121,5 +198,18 @@ class AsyncSupplierServiceTest {
 
         assertEquals(deleteResponse, result);
         verify(commandExecutor).execute(any(DeleteSupplierCommand.class));
+    }
+    
+    @Test
+    void deleteSupplierAsync_WhenExceptionThrown_ShouldCompleteExceptionally() {
+        when(commandExecutor.execute(any(DeleteSupplierCommand.class)))
+            .thenThrow(new RuntimeException("Delete failed"));
+
+        CompletableFuture<Map<String, Object>> future = asyncSupplierService.deleteSupplierAsync(testId);
+
+        ExecutionException exception = assertThrows(ExecutionException.class, future::get);
+        assertTrue(exception.getCause() instanceof org.springframework.web.server.ResponseStatusException);
+        assertEquals("500 INTERNAL_SERVER_ERROR \"Failed to delete supplier with ID " + testId + "\"", 
+            exception.getCause().getMessage());
     }
 }
